@@ -6,12 +6,12 @@ class TestCreate:
     def test_should_create_hashtable(self):
         assert HashTable(capacity=100) is not None
 
-    def test_should_report_capacity(self):
-        assert len(HashTable(capacity=100)) == 100
+    def test_should_report_length_of_empty_hashtable(self):
+        assert len(HashTable(capacity=100)) == 0
 
     def test_should_create_empty_value_slots(self):
         t = HashTable(capacity=3)
-        assert t._pairs == [None] * 3
+        assert t._slots == [None] * 3
 
     def test_should_not_contain_none_values(self, t: HashTable):
         assert None not in t.values
@@ -21,6 +21,14 @@ class TestCreate:
         t[0] = value
         t[1] = value
         assert t.values == [value, value]
+
+    def test_should_not_create_hashtable_with_zero_capacity(self):
+        with pytest.raises(ValueError):
+            HashTable(capacity=0)
+
+    def test_should_not_create_hashtable_with_negative_capacity(self):
+        with pytest.raises(ValueError):
+            HashTable(capacity=-1)
 
 
 class TestInsert:
@@ -45,6 +53,9 @@ class TestAccess:
     def test_should_report_contained_values(self, t_with_values: HashTable, values):
         for value in values:
             assert value in t_with_values.values
+
+    def test_should_report_length(self, t_with_values: HashTable, values):
+        assert len(t_with_values) == len(values)
 
     def test_should_raise_key_error_on_missing_key(self, t: HashTable):
         key = 'Missing Key'
@@ -96,7 +107,7 @@ class TestDelete:
         for key in keys:
             del t_with_values[key]
             assert key not in t_with_values
-        assert l == len(t_with_values)
+        assert l - len(keys) == len(t_with_values)
 
     def test_should_delete_existing_values(self, t_with_values: HashTable, keys, values):
         for key in keys:

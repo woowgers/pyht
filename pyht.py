@@ -27,15 +27,27 @@ MaybePairs: TypeAlias = list[MaybePair]
 
 class HashTable:
     def __init__(self, capacity: int):
-        self._pairs: MaybePairs = [None] * capacity
+        self._validate_capacity(capacity)
+        self._slots: MaybePairs = [None] * capacity
+
+    @staticmethod
+    def _validate_capacity(capacity):
+        if not isinstance(capacity, int):
+            raise ValueError('`capacity` must be integer')
+        if capacity <= 0:
+            raise ValueError('`capacity` must be positive')
 
     @property
     def values(self) -> list[Value]:
-        return [pair.value for pair in self._pairs if pair]
+        return [pair.value for pair in self._slots if pair]
 
     @property
     def pairs(self) -> Pairs:
-        return [pair for pair in self._pairs if pair]
+        return [pair for pair in self._slots if pair]
+
+    @property
+    def capacity(self) -> int:
+        return len(self._slots)
 
     def get(self, key: Key, default: Value = None) -> Value:
         pair = self._get_pair(key)
@@ -44,7 +56,7 @@ class HashTable:
         return default
 
     def __len__(self) -> int:
-        return len(self._pairs)
+        return len(self.pairs)
 
     def __getitem__(self, key: Hashable) -> Value:
         pair = self._get_pair(key)
@@ -54,23 +66,23 @@ class HashTable:
 
     def __setitem__(self, key: Hashable, value: Any) -> Any:
         index = self._make_index(key)
-        self._pairs[index] = Pair(key, value)
+        self._slots[index] = Pair(key, value)
         return value
 
     def __delitem__(self, key: Hashable) -> None:
         index = self._make_index(key)
-        pair = self._pairs[index]
+        pair = self._slots[index]
         if pair is None:
             raise KeyError(key)
-        self._pairs[index] = None
+        self._slots[index] = None
 
     def __contains__(self, key: Hashable) -> bool:
         index = self._make_index(key)
-        return self._pairs[index] is not None
+        return self._slots[index] is not None
 
     def _get_pair(self, key: Hashable) -> MaybePair:
         index = self._make_index(key)
-        return self._pairs[index]
+        return self._slots[index]
 
     def _make_index(self, key: Hashable) -> int:
-        return hash(key) % len(self)
+        return hash(key) % self.capacity
