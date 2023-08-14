@@ -9,6 +9,13 @@ class Pair:
     key: Key
     value: Value
 
+    __Deleted = object()
+
+    @property
+    @classmethod
+    def deleted(cls):
+        return cls.__Deleted
+
     def __init__(self, key: Key, value: Value):
         self.key = key
         self.value = value
@@ -30,7 +37,7 @@ class Pair:
 
 
 Pairs: TypeAlias = list[Pair]
-MaybePair: TypeAlias = Pair | None
+MaybePair: TypeAlias = Pair | Any
 MaybePairs: TypeAlias = list[MaybePair]
 
 
@@ -54,52 +61,72 @@ class HashTable:
         if capacity <= 0:
             raise ValueError('`capacity` must be positive')
 
+    def _probe(self, key: Key):
+        index = self._make_index(key)
+        for _ in range(self.capacity):
+            yield index, self._slots[index]
+            index = (index + 1) % self.capacity
+
     @property
     def keys(self) -> list[Key]:
-        return [pair.key for pair in self._slots if pair]
+        return [pair.key for pair in self._slots if pair not in (None, Pair.deleted)]
 
     @property
     def values(self) -> list[Value]:
-        return [pair.value for pair in self._slots if pair]
+        return [pair.value for pair in self._slots if pair not in (None, Pair.deleted)]
 
     @property
     def pairs(self) -> Pairs:
-        return [pair for pair in self._slots if pair]
+        return [pair for pair in self._slots if pair not in (None, Pair.deleted)]
 
     @property
     def capacity(self) -> int:
         return len(self._slots)
 
     def get(self, key: Key, default: Value = None) -> Value:
-        pair = self._get_pair(key)
-        if pair is not None:
-            return pair.value
+        for _, pair in self._probe(key):
+            if pair not in (None, Pair.deleted) and pair.key == key:
+                return pair.value
         return default
 
     def __len__(self) -> int:
         return len(self.pairs)
 
     def __getitem__(self, key: Hashable) -> Value:
-        pair = self._get_pair(key)
-        if pair is None:
-            raise KeyError(key)
-        return pair.value
+        for _, pair in self._probe(key):
+            if pair is None:
+                raise KeyError(key)
+            if pair is Pair.deleted:
+                continue
+            if pair.key == key:
+                return pair.value
+        raise KeyError(key)
 
-    def __setitem__(self, key: Hashable, value: Any) -> Any:
-        index = self._make_index(key)
-        self._slots[index] = Pair(key, value)
-        return value
+    def __setitem__(self, key: Hashable, value: Any) -> None:
+        for index, pair in self._probe(key):
+            if pair is Pair.deleted:
+                continue
+            if pair is None or pair.key == key:
+                self._slots[index] = Pair(key, value)
+                break
+        else:
+            raise MemoryError('Not enough capacity')
 
     def __delitem__(self, key: Hashable) -> None:
-        index = self._make_index(key)
-        pair = self._slots[index]
-        if pair is None:
+        for index, pair in self._probe(key):
+            if pair is None:
+                raise KeyError(key)
+            if pair is Pair.deleted:
+                continue
+            if pair.key == key:
+                self._slots[index] = Pair.deleted
+                break
+        else:
             raise KeyError(key)
-        self._slots[index] = None
 
     def __contains__(self, key: Hashable) -> bool:
         index = self._make_index(key)
-        return self._slots[index] is not None
+        return self._slots[index] not in (None, Pair.deleted)
 
     def __iter__(self):
         return iter(self.keys)
@@ -109,7 +136,10 @@ class HashTable:
 
     def _get_pair(self, key: Hashable) -> MaybePair:
         index = self._make_index(key)
-        return self._slots[index]
+        for index, pair in self._probe(key):
+            if pair is Pair.deleted:
+                continue
+            return self._slots[index]
 
     def _make_index(self, key: Hashable) -> int:
         return hash(key) % self.capacity
