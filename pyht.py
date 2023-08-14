@@ -11,8 +11,8 @@ class Pair:
 
     __Deleted = object()
 
-    @property
     @classmethod
+    @property
     def deleted(cls):
         return cls.__Deleted
 
