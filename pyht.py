@@ -84,9 +84,9 @@ class HashTable:
         return len(self._slots)
 
     def get(self, key: Key, default: Value = None) -> Value:
-        pair = self._get_pair(key)
-        if pair not in (None, Pair.deleted) and pair.key == key:
-            return pair.value
+        for _, pair in self._probe(key):
+            if pair not in (None, Pair.deleted) and pair.key == key:
+                return pair.value
         return default
 
     def __len__(self) -> int:
