@@ -57,6 +57,25 @@ class TestInsert:
         t[1] = value
         assert t.values == [value, value]
 
+    def test_should_insert_new_elements_after_one_gets_deleted(self):
+        t = HashTable(capacity=2)
+        t[0] = 1
+        del t[0]
+        t[1] = 1
+
+    def test_should_insert_new_elements_after_one_gets_deleted_if_same_hash(self):
+        t = HashTable(capacity=2)
+        with patch('builtins.hash', return_value=0):
+            t[0] = 1
+            del t[0]
+            t[1] = 1
+
+    def test_should_raise_memoryerror_on_exceecing_capacity(self):
+        t = HashTable(capacity=1)
+        t[0] = 0
+        with pytest.raises(MemoryError):
+            t[1] = 1
+
 
 class TestAccess:
     def test_should_return_existing_values_by_keys(self, t_with_values: HashTable, keys, values):
@@ -73,6 +92,17 @@ class TestAccess:
 
     def test_should_not_find_missing_key(self, t: HashTable):
         assert 'Missing Key' not in t
+
+    def test_should_raise_keyerror_on_missing_key(self, t: HashTable):
+        with pytest.raises(KeyError):
+            t[0]
+
+    def test_should_raise_keyerror_on_missing_key_if_it_was_deleted(self):
+        t = HashTable(capacity=1)
+        t[0] = 0
+        del t[0]
+        with pytest.raises(KeyError):
+            t[0]
 
 
 class TestKeys:
@@ -207,6 +237,26 @@ class TestDelete:
         with pytest.raises(KeyError) as exception:
             del t[key]
         assert exception.value.args[0] == key
+
+    def test_should_return_non_deleted_element_after_deletion(self):
+        t = HashTable(capacity=2)
+        with patch('builtins.hash', return_value=0):
+            t[0] = 0
+            t[1] = 1
+            del t[1]
+            assert t[0] == 0
+
+    def test_should_raise_keyerror_on_nonexising_key(self):
+        t = HashTable(capacity=1)
+        with pytest.raises(KeyError):
+            del t[0]
+
+    def test_should_raise_keyerror_on_key_when_it_gets_deleted(self):
+        t = HashTable(capacity=1)
+        t[0] = 0
+        del t[0]
+        with pytest.raises(KeyError):
+            del t[0]
 
 
 class TestUpdate:

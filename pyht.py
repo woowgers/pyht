@@ -11,8 +11,8 @@ class Pair:
 
     __Deleted = object()
 
-    @property
     @classmethod
+    @property
     def deleted(cls):
         return cls.__Deleted
 
@@ -133,13 +133,6 @@ class HashTable:
 
     def __str__(self) -> str:
         return '{' + ', '.join(map(str, self.pairs)) + '}'
-
-    def _get_pair(self, key: Hashable) -> MaybePair:
-        index = self._make_index(key)
-        for index, pair in self._probe(key):
-            if pair is Pair.deleted:
-                continue
-            return self._slots[index]
 
     def _make_index(self, key: Hashable) -> int:
         return hash(key) % self.capacity
