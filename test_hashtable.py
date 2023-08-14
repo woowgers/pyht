@@ -22,7 +22,7 @@ class TestCreate:
     def test_should_not_contain_none_values(self, t: HashTable):
         assert None not in t.values
 
-    def test_should_not_create_hashtable_with_zero_capacity(self):
+    def test_should_raise_valueerror_when_capacity_is_zero(self):
         with pytest.raises(ValueError):
             HashTable(capacity=0)
 
