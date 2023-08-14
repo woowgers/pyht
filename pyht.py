@@ -85,7 +85,7 @@ class HashTable:
 
     def get(self, key: Key, default: Value = None) -> Value:
         pair = self._get_pair(key)
-        if pair not in (None, Pair.deleted):
+        if pair not in (None, Pair.deleted) and pair.key == key:
             return pair.value
         return default
 
