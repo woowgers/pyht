@@ -1,18 +1,17 @@
-from collections.abc import Hashable
-from typing import Any
 import pytest
 
-from pyht import HashTable
+from pyht import HashTable, Key, Value
+from utils import random_integer, random_unique_values
 
 
 @pytest.fixture
-def t() -> HashTable:
-    return HashTable(capacity=100)
+def t(n_values: int) -> HashTable:
+    return HashTable(capacity=n_values)
 
 
 @pytest.fixture
-def t_with_values(keys, values) -> HashTable:
-    t = HashTable(capacity=100)
+def t_with_values(n_values: int, keys, values) -> HashTable:
+    t = HashTable(capacity=n_values)
     for i in range(len(keys)):
         key = keys[i]
         value = values[i]
@@ -21,10 +20,15 @@ def t_with_values(keys, values) -> HashTable:
 
 
 @pytest.fixture
-def keys() -> tuple[Hashable, Hashable, Hashable, Hashable, Hashable]:
-    return ('key', 10, 9.4, None, False)
+def n_values() -> int:
+    return 1 + abs(random_integer()) % 100
 
 
 @pytest.fixture
-def values() -> tuple[Hashable, Hashable, Hashable, Hashable, Hashable]:
-    return ('value', 10.0, 9, None, True)
+def keys(n_values: int) -> list[Key]:
+    return random_unique_values(n_values)
+
+
+@pytest.fixture
+def values(n_values: int) -> list[Value]:
+    return random_unique_values(n_values)

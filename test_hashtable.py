@@ -30,7 +30,8 @@ class TestCreate:
         with pytest.raises(ValueError):
             HashTable(capacity=-1)
 
-    def test_should_add_values_when_collision_happens(self, t: HashTable):
+    def test_should_add_values_when_collision_happens(self):
+        t = HashTable(capacity=2)
         value = 'Some Value'
         with patch('builtins.hash', return_value=0):
             t[0] = value
@@ -45,7 +46,8 @@ class TestInsert:
             value = values[i]
             t[key] = value
 
-    def test_should_return_duplicate_values(self, t: HashTable):
+    def test_should_return_duplicate_values(self):
+        t = HashTable(capacity=2)
         value = 'Same Value'
         t[0] = value
         t[1] = value
