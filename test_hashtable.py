@@ -26,6 +26,10 @@ class TestCreate:
         with pytest.raises(ValueError):
             HashTable(capacity=0)
 
+    def test_should_raise_valueerror_when_capacity_not_integer(self):
+        with pytest.raises(ValueError):
+            HashTable(capacity='Not an integer')  # pyright: ignore
+
     def test_should_not_create_hashtable_with_negative_capacity(self):
         with pytest.raises(ValueError):
             HashTable(capacity=-1)
