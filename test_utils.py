@@ -1,5 +1,9 @@
+from types import NoneType
+
 from pytest_unordered import unordered
+
 from utils import (
+    random_boolean,
     random_float,
     random_integer,
     random_none,
@@ -8,13 +12,18 @@ from utils import (
     random_unique_values,
     random_value,
 )
-from types import NoneType
 
 
 class TestInteger:
     def test_returns_integer(self):
         value = random_integer()
         assert isinstance(value, int)
+
+
+class TestBool:
+    def test_returns_boolean(self):
+        value = random_boolean()
+        assert isinstance(value, bool)
 
 
 class TestFloat:
