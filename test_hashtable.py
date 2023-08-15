@@ -70,12 +70,6 @@ class TestInsert:
             del t[0]
             t[1] = 1
 
-    def test_should_raise_memoryerror_on_exceecing_capacity(self):
-        t = HashTable(capacity=1)
-        t[0] = 0
-        with pytest.raises(MemoryError):
-            t[1] = 1
-
 
 class TestAccess:
     def test_should_return_existing_values_by_keys(self, t_with_values: HashTable, keys, values):

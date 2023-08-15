@@ -85,9 +85,12 @@ class HashTable:
 
     def get(self, key: Key, default: Value = None) -> Value:
         for _, pair in self._probe(key):
-            if pair not in (None, Pair.deleted) and pair.key == key:
+            if self._key_corresponds_to_pair(key, pair):
                 return pair.value
         return default
+
+    def _key_corresponds_to_pair(self, key: Key, pair: Pair) -> bool:
+        return pair not in (None, Pair.deleted) and pair.key == key
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -110,7 +113,8 @@ class HashTable:
                 self._slots[index] = Pair(key, value)
                 break
         else:
-            raise MemoryError('Not enough capacity')
+            self._resize_and_rehash()
+            self[key] = value
 
     def __delitem__(self, key: Hashable) -> None:
         for index, pair in self._probe(key):
@@ -136,3 +140,13 @@ class HashTable:
 
     def _make_index(self, key: Hashable) -> int:
         return hash(key) % self.capacity
+
+    @property
+    def _new_optimal_capacity(self):
+        return int(2.7 * self.capacity)
+
+    def _resize_and_rehash(self):
+        t = HashTable(capacity=self._new_optimal_capacity)
+        for k, v in self.pairs:
+            t[k] = v
+        self._slots = t._slots
